@@ -1,6 +1,10 @@
 let platformCount = 5;
 let platforms = [];
 
+const startMenu = () => {
+
+}
+
 const render = () => {
   const $playArea = $(".playArea").css({
     width: "400px",
@@ -99,6 +103,14 @@ const movePlatforms = () => {
     });
   }
 };
+
+const gameOn = () =>    {
+
+}
+
+const gameOver = () =>  {
+
+}
 
 const main = () => {
   render();
