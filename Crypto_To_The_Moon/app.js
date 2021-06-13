@@ -1,5 +1,5 @@
 ////////// Data \\\\\\\\\\
-let platformCount = 5;
+let platformCount = 10;
 let platforms = [];
 let isJumping = false;
 let descent = 3;
@@ -74,16 +74,16 @@ const up = (liftPoint) => {
 };
 
 const moveRocket = (event) => {
-  console.log('clicked');
+  console.log("clicked");
   let $rocketLeft = parseFloat($(".rocket").css("left"));
   switch (event.which) {
     case 37:
-      let moveLeft = $rocketLeft - 5;
-      $('.rocket').css("left", `${moveLeft}px`);
+      let moveLeft = $rocketLeft - 10;
+      $(".rocket").css("left", `${moveLeft}px`);
       break;
     case 39:
-      let moveRight = $rocketLeft + 5;
-      $('.rocket').css("left", `${moveRight}px`);
+      let moveRight = $rocketLeft + 10;
+      $(".rocket").css("left", `${moveRight}px`);
       break;
   }
   // let $rocketLeft = parseFloat($(".rocket").css("left"));
@@ -112,8 +112,9 @@ const createPlatforms = (event) => {
         bottom: `${newPlatBottom}px`,
         "font-size": "10px",
         "text-align": "center",
+        background: "url(assets/platform.png)",
+        "background-size": "contain",
       });
-    $platform.text("PRICE FLOOR");
     event.append($platform);
     platforms.push($platform);
   }
@@ -131,8 +132,9 @@ const newPlatform = (newPlatBottom) => {
       bottom: `${newPlatBottom}px`,
       "font-size": "10px",
       "text-align": "center",
+      background: "url(assets/platform.png)",
+      "background-size": "contain",
     });
-  $platform.text("PRICE FLOOR");
   platforms.push($platform);
   $(".playArea").append($platform);
 };
@@ -162,7 +164,7 @@ const gameOver = () => {
 const main = () => {
   render();
   createPlatforms($(".playArea"));
-  $('body').keydown(moveRocket);
+  $("body").keydown(moveRocket);
   setInterval(movePlatforms, 15);
   // setInterval(down, 30);
 };
