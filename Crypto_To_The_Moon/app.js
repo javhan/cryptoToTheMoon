@@ -1,11 +1,13 @@
 ////////// Data \\\\\\\\\\
-let platformCount = 10;
+let platformCount = 7;
 const platforms = [];
 let isJumping = false;
 let descent = 3;
 let ascent = 5;
 let startingPoints;
 let score = 0;
+let downTimer; // very important when it comes to resetting jumps
+let upTimer; // very important when it comes to resetting jumps
 
 //first page - Start Menu
 const startMenu = () => {
@@ -61,6 +63,7 @@ const render = () => {
 ////////// Rocket movements \\\\\\\\\\
 const down = () => {
   if (!isJumping) {
+    clearInterval(upTimer);
     let $rocketBottom = parseFloat($(".rocket").css("bottom"));
     let $rocketLeft = parseFloat($(".rocket").css("left"));
     let rocketNewLow = $rocketBottom - descent;
@@ -75,7 +78,7 @@ const down = () => {
         console.log("platform touched");
         isJumping = true;
         startingPoint = parseFloat($(".rocket").css("bottom"));
-        setInterval(up, 50, startingPoint); // need to sort this out causing the game to spazz
+        upTimer = setInterval(up, 50, startingPoint); // need to sort this out causing the game to spazz
       }
     }
     if ($rocketBottom <= 0) {
@@ -88,13 +91,14 @@ const down = () => {
 const up = (liftPoint) => {
   let $rocketBottom = parseFloat($(".rocket").css("bottom"));
   if (isJumping) {
+    clearInterval(downTimer);
     let rocketHigh = $rocketBottom + ascent;
     $(".rocket").css("bottom", `${rocketHigh}px`);
   }
   if ($rocketBottom >= liftPoint + 100) {
     isJumping = false;
     startingPoint = -5;
-    setInterval(down, 30); //need to sort this out causing game to spazz
+    downTimer = setInterval(down, 30); //need to sort this out causing game to spazz
   }
 };
 
@@ -118,7 +122,8 @@ const moveRocket = (event) => {
   }
 };
 
-const createPlatforms = (event) => {
+////////// Platforms \\\\\\\\\\
+const createPlatforms = () => {
   for (let i = 0; i < platformCount; i++) {
     let platformSpace = 600 / platformCount;
     let newPlatBottom = 100 + i * platformSpace;
@@ -136,7 +141,7 @@ const createPlatforms = (event) => {
         background: "url(assets/platform.png)",
         "background-size": "contain",
       });
-    event.append($platform);
+    $(".playArea").append($platform);
     platforms.push($platform);
   }
 };
@@ -163,7 +168,7 @@ const newPlatform = (newPlatBottom) => {
 };
 
 const movePlatforms = () => {
-  if (parseFloat($(".rocket").css("bottom")) > 100) {
+  if (parseFloat($(".rocket").css("bottom")) > 150) {
     platforms.forEach((platform) => {
       let newBottom = parseFloat(platform.css("bottom")) - 3;
       platform.css("bottom", `${newBottom}` + `px`);
@@ -183,7 +188,7 @@ const gameOn = () => {
   createPlatforms($(".playArea"));
   $("body").keydown(moveRocket);
   setInterval(movePlatforms, 15);
-  // setInterval(down, 30); sort this out, causing game to spazz
+  downTimer = setInterval(down, 30); // sort this out, causing game to spazz
 };
 
 const gameOver = () => {
