@@ -1,10 +1,14 @@
+////////// Data \\\\\\\\\\
 let platformCount = 5;
 let platforms = [];
+let isJumping = false;
+let descent = 3;
+let ascent = 5;
+let startingPoints;
 
-const startMenu = () => {
+const startMenu = () => {};
 
-}
-
+////////// Building the play area \\\\\\\\\\
 const render = () => {
   const $playArea = $(".playArea").css({
     width: "400px",
@@ -21,31 +25,76 @@ const render = () => {
     height: "60px",
     "background-color": "#057DCD",
     position: "absolute",
-    left: "50%",
+    left: "200px",
     bottom: "200px",
     background: "url(assets/free-rocket.png)",
-    "background-size": 'cover' 
+    "background-size": "cover",
   });
 
   $playArea.append($rocket);
 };
-
+////////// Rocket movements \\\\\\\\\\
 const down = () => {
-  $(".rocket").animate({ top: "400px" }, 1000);
-  up();
+  if (!isJumping) {
+    let $rocketBottom = parseFloat($(".rocket").css("bottom"));
+    let $rocketLeft = parseFloat($(".rocket").css("left"));
+    let rocketNewLow = $rocketBottom - descent;
+    $(".rocket").css("bottom", `${rocketNewLow}px`);
+    for (const platform of platforms) {
+      if (
+        $rocketLeft >= parseFloat(platform.css("left")) - 50 &&
+        $rocketLeft <= parseFloat(platform.css("left")) + 135 &&
+        $rocketBottom >= parseFloat(platform.css("bottom")) &&
+        $rocketBottom <= parseFloat(platform.css("bottom")) + 20
+      ) {
+        console.log("platform touched");
+        isJumping = true;
+        startingPoint = parseFloat($(".rocket").css("bottom"));
+        setInterval(up, 50, startingPoint);
+      }
+    }
+    if ($rocketBottom <= 0) {
+      descent = 0;
+      gameOver();
+    }
+  }
 };
 
-const up = () => {
-  $(".rocket").animate({ top: "0px" }, 1000);
-  down();
+const up = (liftPoint) => {
+  let $rocketBottom = parseFloat($(".rocket").css("bottom"));
+  if (isJumping) {
+    let rocketHigh = $rocketBottom + ascent;
+    $(".rocket").css("bottom", `${rocketHigh}px`);
+  }
+  if ($rocketBottom >= liftPoint + 100) {
+    isJumping = false;
+    startingPoint = -5;
+    setInterval(down, 30);
+  }
 };
 
 const moveRocket = (event) => {
-  if (event.key === "ArrowLeft") {
-    // move left
-  } else if (event.key === "ArrowRight") {
-    // move right
+  console.log('clicked');
+  let $rocketLeft = parseFloat($(".rocket").css("left"));
+  switch (event.which) {
+    case 37:
+      let moveLeft = $rocketLeft - 5;
+      $('.rocket').css("left", `${moveLeft}px`);
+      break;
+    case 39:
+      let moveRight = $rocketLeft + 5;
+      $('.rocket').css("left", `${moveRight}px`);
+      break;
   }
+  // let $rocketLeft = parseFloat($(".rocket").css("left"));
+  // if (event.key === "ArrowLeft") {
+  //   console.log("clicked");
+  //   let moveLeft = $rocketLeft - 5;
+  //   $('.rocket').css("left", `${moveLeft}px`)
+  // } else if (event.key === "ArrowRight") {
+  //   let moveLeft = $rocketLeft + 5;
+  //   $('.rocket').css("left", `${moveLeft}px`)
+  // }
 };
 
 const createPlatforms = (event) => {
@@ -67,12 +116,10 @@ const createPlatforms = (event) => {
     $platform.text("PRICE FLOOR");
     event.append($platform);
     platforms.push($platform);
-    console.log(platforms);
   }
 };
 
 const newPlatform = (newPlatBottom) => {
-  console.log(platforms);
   const $platform = $("<div>")
     .addClass("platform")
     .css({
@@ -96,6 +143,7 @@ const movePlatforms = () => {
       let newBottom = parseFloat(platform.css("bottom")) - 3;
       platform.css("bottom", `${newBottom}` + `px`);
       if (parseFloat(platform.css("bottom")) < 3) {
+        // platform disappears here
         platforms.shift();
         $(".playArea").find(".platform").first().remove();
         newPlatform(590);
@@ -104,19 +152,19 @@ const movePlatforms = () => {
   }
 };
 
-const gameOn = () =>    {
+const gameOn = () => {};
 
-}
-
-const gameOver = () =>  {
-
-}
+const gameOver = () => {
+  console.log("Game Over!");
+  isJumping = true;
+};
 
 const main = () => {
   render();
   createPlatforms($(".playArea"));
+  $('body').keydown(moveRocket);
   setInterval(movePlatforms, 15);
-//   down();
+  // setInterval(down, 30);
 };
 
 $(main);
