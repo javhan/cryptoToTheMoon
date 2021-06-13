@@ -1,24 +1,43 @@
 ////////// Data \\\\\\\\\\
 let platformCount = 10;
-let platforms = [];
+const platforms = [];
 let isJumping = false;
 let descent = 3;
 let ascent = 5;
 let startingPoints;
+let score = 0;
 
-const startMenu = () => {};
-
-////////// Building the play area \\\\\\\\\\
-const render = () => {
-  const $playArea = $(".playArea").css({
+//first page - Start Menu
+const startMenu = () => {
+  $playArea = $(".playArea").css({
     width: "400px",
     height: "600px",
     "background-color": "#191919",
     position: "relative",
     background:
       "url(https://cdn.statically.io/img/i.pinimg.com/originals/6c/10/41/6c104134a19348812711bc77d068e315.jpg)",
-    "background-size": "cover",
+    "background-size": "cover"
   });
+
+  $button = $(
+    `<input type = button value="Start Game" id = "startGame">`
+  );
+
+  $playArea.append($button);
+
+};
+
+////////// Building the play area \\\\\\\\\\
+const render = () => {
+  // const $playArea = $(".playArea").css({
+  //   width: "400px",
+  //   height: "600px",
+  //   "background-color": "#191919",
+  //   position: "relative",
+  //   background:
+  //     "url(https://cdn.statically.io/img/i.pinimg.com/originals/6c/10/41/6c104134a19348812711bc77d068e315.jpg)",
+  //   "background-size": "cover",
+  // });
 
   const $rocket = $("<div>").addClass("rocket").css({
     width: "50px",
@@ -31,7 +50,13 @@ const render = () => {
     "background-size": "cover",
   });
 
-  $playArea.append($rocket);
+  const $highScore = $("<div>")
+    .addClass("score")
+    .text(`Highscore: ${score}`)
+    .css({ color: "white", "background-color": "black", opacity: "0.5" });
+
+  $(".playArea").append($highScore);
+  $(".playArea").append($rocket);
 };
 ////////// Rocket movements \\\\\\\\\\
 const down = () => {
@@ -74,13 +99,12 @@ const up = (liftPoint) => {
 };
 
 const moveRocket = (event) => {
-  console.log("clicked");
   let $rocketLeft = parseFloat($(".rocket").css("left"));
-  if ($rocketLeft >= 350) {
+  if ($rocketLeft > 350) {
     console.log($rocketLeft);
-    $rocketLeft = -10;
-  } else if ($rocketLeft <= 0){
-    $rocketLeft = 360;
+    $rocketLeft = 0;
+  } else if ($rocketLeft < 0) {
+    $rocketLeft = 350;
   }
   switch (event.which) {
     case 37:
@@ -92,15 +116,6 @@ const moveRocket = (event) => {
       $(".rocket").css("left", `${moveRight}px`);
       break;
   }
-  // let $rocketLeft = parseFloat($(".rocket").css("left"));
-  // if (event.key === "ArrowLeft") {
-  //   console.log("clicked");
-  //   let moveLeft = $rocketLeft - 5;
-  //   $('.rocket').css("left", `${moveLeft}px`)
-  // } else if (event.key === "ArrowRight") {
-  //   let moveLeft = $rocketLeft + 5;
-  //   $('.rocket').css("left", `${moveLeft}px`)
-  // }
 };
 
 const createPlatforms = (event) => {
@@ -141,6 +156,8 @@ const newPlatform = (newPlatBottom) => {
       background: "url(assets/platform.png)",
       "background-size": "contain",
     });
+  score++;
+  $(".score").text(`Highscore: ${score}`);
   platforms.push($platform);
   $(".playArea").append($platform);
 };
@@ -160,7 +177,14 @@ const movePlatforms = () => {
   }
 };
 
-const gameOn = () => {};
+const gameOn = () => {
+  $('#startGame').remove();
+  render();
+  createPlatforms($(".playArea"));
+  $("body").keydown(moveRocket);
+  setInterval(movePlatforms, 15);
+  // setInterval(down, 30); sort this out, causing game to spazz
+};
 
 const gameOver = () => {
   console.log("Game Over!");
@@ -168,11 +192,8 @@ const gameOver = () => {
 };
 
 const main = () => {
-  render();
-  createPlatforms($(".playArea"));
-  $("body").keydown(moveRocket);
-  setInterval(movePlatforms, 15);
-  // setInterval(down, 30); sort this out, causing game to spazz
+  startMenu();
+  $('#startGame').on("click", gameOn);
 };
 
 $(main);
