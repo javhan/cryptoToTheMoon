@@ -50,7 +50,7 @@ const down = () => {
         console.log("platform touched");
         isJumping = true;
         startingPoint = parseFloat($(".rocket").css("bottom"));
-        setInterval(up, 50, startingPoint);
+        setInterval(up, 50, startingPoint); // need to sort this out causing the game to spazz
       }
     }
     if ($rocketBottom <= 0) {
@@ -69,13 +69,19 @@ const up = (liftPoint) => {
   if ($rocketBottom >= liftPoint + 100) {
     isJumping = false;
     startingPoint = -5;
-    setInterval(down, 30);
+    setInterval(down, 30); //need to sort this out causing game to spazz
   }
 };
 
 const moveRocket = (event) => {
   console.log("clicked");
   let $rocketLeft = parseFloat($(".rocket").css("left"));
+  if ($rocketLeft >= 350) {
+    console.log($rocketLeft);
+    $rocketLeft = -10;
+  } else if ($rocketLeft <= 0){
+    $rocketLeft = 360;
+  }
   switch (event.which) {
     case 37:
       let moveLeft = $rocketLeft - 10;
@@ -166,7 +172,7 @@ const main = () => {
   createPlatforms($(".playArea"));
   $("body").keydown(moveRocket);
   setInterval(movePlatforms, 15);
-  // setInterval(down, 30);
+  // setInterval(down, 30); sort this out, causing game to spazz
 };
 
 $(main);
