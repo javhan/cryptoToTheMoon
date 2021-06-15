@@ -1,3 +1,28 @@
-/* .playArea   {
-    
-} */
+#startGame  {
+    color: white;
+    width: 200px;
+    height: auto;
+    position: relative;
+    margin: 0 auto;
+    top: 50%;
+    font-size: 50px;
+    cursor: pointer;
+}
+
+#restartGame    {
+    color: black;
+    width: 200px;
+    height: auto;
+    position: relative;
+    margin: 0 auto;
+    top: 70%;
+    font-size: 50px;
+    cursor: pointer;
+}
+
+.scoreboard {
+    color: white;
+    position: relative;
+    top: 200px;
+    background-color: black;
+}

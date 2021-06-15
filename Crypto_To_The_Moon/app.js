@@ -1,15 +1,43 @@
-////////// Data \\\\\\\\\\
-let platformCount = 7;
-const platforms = [];
-let isJumping = false;
-let descent = 3;
-let ascent = 5;
-let startingPoints;
-let score = 0;
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+////////// DATA \\\\\\\\\\
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+let platformCount = 10;
+let platforms = [];
+let score;
 let downTimer; // very important when it comes to resetting jumps
 let upTimer; // very important when it comes to resetting jumps
+let moveTimer;
+let jumpSound;
 
-//first page - Start Menu
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+////////// MISCELLANEOUS \\\\\\\\\\
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class audioEffect {
+  constructor(source) {
+    this.sound = document.createElement("audio");
+    this.sound.src = source;
+    this.sound.setAttribute("preload", "auto");
+    this.sound.setAttribute("controls", "none");
+    this.sound.style.display = "none";
+    document.body.appendChild(this.sound);
+  }
+  play() {
+    this.sound.play();
+  }
+  stop() {
+    this.sound.pause();
+  }
+  changeMusic(src) {
+    this.sound.src = src;
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+////////// BUILDING PLAY AREA \\\\\\\\\\
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
 const startMenu = () => {
   $playArea = $(".playArea").css({
     width: "400px",
@@ -18,37 +46,23 @@ const startMenu = () => {
     position: "relative",
     background:
       "url(https://cdn.statically.io/img/i.pinimg.com/originals/6c/10/41/6c104134a19348812711bc77d068e315.jpg)",
-    "background-size": "cover"
+    "background-size": "cover",
   });
 
-  $button = $(
-    `<input type = button value="Start Game" id = "startGame">`
-  );
+  $startText = $("<div>").attr("id", "startGame").text("HODL!!!");
 
-  $playArea.append($button);
-
+  $playArea.append($startText);
 };
 
-////////// Building the play area \\\\\\\\\\
 const render = () => {
-  // const $playArea = $(".playArea").css({
-  //   width: "400px",
-  //   height: "600px",
-  //   "background-color": "#191919",
-  //   position: "relative",
-  //   background:
-  //     "url(https://cdn.statically.io/img/i.pinimg.com/originals/6c/10/41/6c104134a19348812711bc77d068e315.jpg)",
-  //   "background-size": "cover",
-  // });
-
   const $rocket = $("<div>").addClass("rocket").css({
     width: "50px",
     height: "60px",
     "background-color": "#057DCD",
     position: "absolute",
     left: "200px",
-    bottom: "200px",
-    background: "url(assets/free-rocket.png)",
+    bottom: "400px",
+    background: "url(assets/doge-rocket.png)",
     "background-size": "cover",
   });
 
@@ -60,31 +74,76 @@ const render = () => {
   $(".playArea").append($highScore);
   $(".playArea").append($rocket);
 };
-////////// Rocket movements \\\\\\\\\\
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+////////// ROCKET MOVEMENTS \\\\\\\\\\
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+const movement = {
+  isJumping: false,
+  descent: 3,
+  ascent: 20,
+  startingPoints: 0,
+  keydown: "",
+  getJumping: () => {
+    return this.isJumping;
+  },
+  setJumping: (boolean) => {
+    this.isJumping = boolean;
+  },
+  getDescent: () => {
+    return this.descent;
+  },
+  setDescent: (num) => {
+    this.descent = num;
+  },
+  getAscent: () => {
+    return this.ascent;
+  },
+  setAscent: (num) => {
+    this.ascent = num;
+  },
+  getSP: () => {
+    return this.startingPoints;
+  },
+  setSP: (num) => {
+    this.startingPoints = num;
+  },
+  getKeydown: () => {
+    return this.keydown;
+  },
+  setKeydown: (num) => {
+    this.keydown = num;
+  },
+};
+
 const down = () => {
   if (!isJumping) {
     clearInterval(upTimer);
     let $rocketBottom = parseFloat($(".rocket").css("bottom"));
     let $rocketLeft = parseFloat($(".rocket").css("left"));
-    let rocketNewLow = $rocketBottom - descent;
+    let rocketNewLow = $rocketBottom - movement.getDescent();
     $(".rocket").css("bottom", `${rocketNewLow}px`);
     for (const platform of platforms) {
       if (
-        $rocketLeft >= parseFloat(platform.css("left")) - 50 &&
-        $rocketLeft <= parseFloat(platform.css("left")) + 135 &&
-        $rocketBottom >= parseFloat(platform.css("bottom")) &&
-        $rocketBottom <= parseFloat(platform.css("bottom")) + 20
+        $rocketLeft >= parseFloat(platform.css("left")) - 25 &&
+        $rocketLeft <= parseFloat(platform.css("left")) + 85 &&
+        $rocketBottom >= parseFloat(platform.css("bottom")) - 10 &&
+        $rocketBottom <= parseFloat(platform.css("bottom")) + 25
       ) {
         console.log("platform touched");
-        isJumping = true;
-        startingPoint = parseFloat($(".rocket").css("bottom"));
-        upTimer = setInterval(up, 50, startingPoint); // need to sort this out causing the game to spazz
+        movement.setJumping(true);
+        movement.setSP(parseFloat($(".rocket").css("bottom")));
+        movement.setDescent(3);
+        jumpSound.play();
+        upTimer = setInterval(up, 50, movement.getSP()); // need to sort this out causing the game to spazz
       }
     }
     if ($rocketBottom <= 0) {
-      descent = 0;
+      clearInterval(downTimer);
       gameOver();
     }
+    movement.setDescent(movement.getDescent() + 0.5);
   }
 };
 
@@ -92,17 +151,19 @@ const up = (liftPoint) => {
   let $rocketBottom = parseFloat($(".rocket").css("bottom"));
   if (isJumping) {
     clearInterval(downTimer);
-    let rocketHigh = $rocketBottom + ascent;
+    let rocketHigh = $rocketBottom + movement.getAscent();
     $(".rocket").css("bottom", `${rocketHigh}px`);
   }
-  if ($rocketBottom >= liftPoint + 100) {
+  if ($rocketBottom >= liftPoint + 120) {
     isJumping = false;
-    startingPoint = -5;
-    downTimer = setInterval(down, 30); //need to sort this out causing game to spazz
+    downTimer = setInterval(down, 30);
+  } else if ($rocketBottom >= 540) {
+    isJumping = false;
+    downTimer = setInterval(down, 30);
   }
 };
 
-const moveRocket = (event) => {
+const moveRocket = () => {
   let $rocketLeft = parseFloat($(".rocket").css("left"));
   if ($rocketLeft > 350) {
     console.log($rocketLeft);
@@ -110,19 +171,23 @@ const moveRocket = (event) => {
   } else if ($rocketLeft < 0) {
     $rocketLeft = 350;
   }
-  switch (event.which) {
-    case 37:
+  switch (movement.getKeydown()) {
+    case "ArrowLeft":
       let moveLeft = $rocketLeft - 10;
       $(".rocket").css("left", `${moveLeft}px`);
       break;
-    case 39:
+    case "ArrowRight":
       let moveRight = $rocketLeft + 10;
       $(".rocket").css("left", `${moveRight}px`);
       break;
   }
+  window.requestAnimationFrame(moveRocket);
 };
 
-////////// Platforms \\\\\\\\\\
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+////////// PLATFORMS \\\\\\\\\\
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
 const createPlatforms = () => {
   for (let i = 0; i < platformCount; i++) {
     let platformSpace = 600 / platformCount;
@@ -136,8 +201,6 @@ const createPlatforms = () => {
         position: "absolute",
         left: `${Math.random() * 315}px`,
         bottom: `${newPlatBottom}px`,
-        "font-size": "10px",
-        "text-align": "center",
         background: "url(assets/platform.png)",
         "background-size": "contain",
       });
@@ -162,43 +225,108 @@ const newPlatform = (newPlatBottom) => {
       "background-size": "contain",
     });
   score++;
+  if (score === 50) {
+    $(".platform").remove();
+    clearInterval(moveTimer);
+    platforms = [];
+    platformCount = 8;
+    createPlatforms();
+    moveTimer = setInterval(movePlatforms, 10);
+    //
+  }
+  if (score === 100) {
+    $(".platform").remove();
+    clearInterval(moveTimer);
+    platforms = [];
+    platformCount = 6;
+    createPlatforms();
+    moveTimer = setInterval(movePlatforms, 10);
+  }
   $(".score").text(`Highscore: ${score}`);
   platforms.push($platform);
   $(".playArea").append($platform);
 };
 
 const movePlatforms = () => {
-  if (parseFloat($(".rocket").css("bottom")) > 150) {
+  if (parseFloat($(".rocket").css("bottom")) > 300) {
     platforms.forEach((platform) => {
       let newBottom = parseFloat(platform.css("bottom")) - 3;
       platform.css("bottom", `${newBottom}` + `px`);
       if (parseFloat(platform.css("bottom")) < 3) {
         // platform disappears here
-        platforms.shift();
+        if (score === 50) {
+          $(".playArea").find(".platform").last().remove();
+          platforms.pop();
+        }
+        if (score === 100) {
+          $(".playArea").find(".platform").last().remove();
+          platforms.pop();
+        }
         $(".playArea").find(".platform").first().remove();
+        platforms.shift();
         newPlatform(590);
       }
     });
   }
 };
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+////////// GAME EXECUTION \\\\\\\\\\
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const gameOn = () => {
-  $('#startGame').remove();
+  isJumping = false;
+  score = 0;
+  movement.setDescent(3);
+  movement.setAscent(20);
+  $(".playArea").css({
+    background:
+      "url(https://cdn.statically.io/img/i.pinimg.com/originals/6c/10/41/6c104134a19348812711bc77d068e315.jpg)",
+    "background-size": "cover",
+  });
+  $("#restartGame").remove();
+  $("#startGame").remove();
   render();
-  createPlatforms($(".playArea"));
-  $("body").keydown(moveRocket);
-  setInterval(movePlatforms, 15);
+  platformCount = 10;
+  createPlatforms();
+  moveTimer = setInterval(movePlatforms, 10);
   downTimer = setInterval(down, 30); // sort this out, causing game to spazz
 };
 
-const gameOver = () => {
-  console.log("Game Over!");
+const reset = () => {
   isJumping = true;
+  clearInterval(moveTimer); //
+  clearInterval(upTimer);
+  clearInterval(downTimer);
+  platforms = [];
+  $(".playArea").empty();
+};
+
+const gameOver = () => {
+  reset();
+  $(".playArea").css({
+    background:
+      "url(https://cdn.statically.io/img/i.pinimg.com/originals/6c/10/41/6c104134a19348812711bc77d068e315.jpg)",
+    "background-size": "cover",
+    "text-align": "center",
+  });
+  $button = $(`<input type = button value="Restart" id = "restartGame">`);
+  $scoreboard = $('<div>').addClass("scoreboard").text(`You failed to HODL, you only got ${score}`)
+  $(".playArea").append($scoreboard).append($button);
+  $("#restartGame").on("click", gameOn);
 };
 
 const main = () => {
   startMenu();
-  $('#startGame').on("click", gameOn);
+  jumpSound = new audioEffect("./assets/jump.mp3");
+  stageSound = new audioEffect("./assets/1LudiDream.mp3");
+  $("body").on("keydown", (e) => {
+    movement.setKeydown(e.key);
+  });
+  $("body").on("keyup", (e) => {
+    movement.setKeydown("");
+  });
+  window.requestAnimationFrame(moveRocket);
+  $("#startGame").on("click", gameOn);
 };
 
 $(main);
