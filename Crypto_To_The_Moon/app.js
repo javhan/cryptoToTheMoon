@@ -10,6 +10,44 @@ let upTimer; // very important when it comes to resetting jumps
 let moveTimer;
 let jumpSound;
 
+const movement = {
+  isJumping: false,
+  descent: 3,
+  ascent: 20,
+  startingPoints: 0,
+  keydown: "",
+  getJumping() {
+    return this.isJumping;
+  },
+  setJumping(boolean) {
+    this.isJumping = boolean;
+  },
+  getDescent() {
+    return this.descent;
+  },
+  setDescent(num) {
+    this.descent = num;
+  },
+  getAscent() {
+    return this.ascent;
+  },
+  setAscent(num) {
+    this.ascent = num;
+  },
+  getSP() {
+    return this.startingPoints;
+  },
+  setSP(num) {
+    this.startingPoints = num;
+  },
+  getKeydown() {
+    return this.keydown;
+  },
+  setKeydown(num) {
+    this.keydown = num;
+  },
+};
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////// MISCELLANEOUS \\\\\\\\\\
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -79,46 +117,9 @@ const render = () => {
 ////////// ROCKET MOVEMENTS \\\\\\\\\\
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const movement = {
-  isJumping: false,
-  descent: 3,
-  ascent: 20,
-  startingPoints: 0,
-  keydown: "",
-  getJumping: () => {
-    return this.isJumping;
-  },
-  setJumping: (boolean) => {
-    this.isJumping = boolean;
-  },
-  getDescent: () => {
-    return this.descent;
-  },
-  setDescent: (num) => {
-    this.descent = num;
-  },
-  getAscent: () => {
-    return this.ascent;
-  },
-  setAscent: (num) => {
-    this.ascent = num;
-  },
-  getSP: () => {
-    return this.startingPoints;
-  },
-  setSP: (num) => {
-    this.startingPoints = num;
-  },
-  getKeydown: () => {
-    return this.keydown;
-  },
-  setKeydown: (num) => {
-    this.keydown = num;
-  },
-};
 
 const down = () => {
-  if (!isJumping) {
+  if (movement.getJumping() === false) {
     clearInterval(upTimer);
     let $rocketBottom = parseFloat($(".rocket").css("bottom"));
     let $rocketLeft = parseFloat($(".rocket").css("left"));
@@ -131,7 +132,6 @@ const down = () => {
         $rocketBottom >= parseFloat(platform.css("bottom")) - 10 &&
         $rocketBottom <= parseFloat(platform.css("bottom")) + 25
       ) {
-        console.log("platform touched");
         movement.setJumping(true);
         movement.setSP(parseFloat($(".rocket").css("bottom")));
         movement.setDescent(3);
@@ -149,16 +149,16 @@ const down = () => {
 
 const up = (liftPoint) => {
   let $rocketBottom = parseFloat($(".rocket").css("bottom"));
-  if (isJumping) {
+  if (movement.getJumping() === true) {
     clearInterval(downTimer);
     let rocketHigh = $rocketBottom + movement.getAscent();
     $(".rocket").css("bottom", `${rocketHigh}px`);
   }
   if ($rocketBottom >= liftPoint + 120) {
-    isJumping = false;
+    movement.setJumping(false);
     downTimer = setInterval(down, 30);
   } else if ($rocketBottom >= 540) {
-    isJumping = false;
+    movement.setJumping(false);
     downTimer = setInterval(down, 30);
   }
 };
@@ -166,7 +166,6 @@ const up = (liftPoint) => {
 const moveRocket = () => {
   let $rocketLeft = parseFloat($(".rocket").css("left"));
   if ($rocketLeft > 350) {
-    console.log($rocketLeft);
     $rocketLeft = 0;
   } else if ($rocketLeft < 0) {
     $rocketLeft = 350;
@@ -242,7 +241,7 @@ const newPlatform = (newPlatBottom) => {
     createPlatforms();
     moveTimer = setInterval(movePlatforms, 10);
   }
-  $(".score").text(`Highscore: ${score}`);
+  $(".score").text(`Highscore: ${score * 1234} BTC`);
   platforms.push($platform);
   $(".playArea").append($platform);
 };
@@ -274,6 +273,7 @@ const movePlatforms = () => {
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const gameOn = () => {
+  $('.scoreboard').remove();
   isJumping = false;
   score = 0;
   movement.setDescent(3);
@@ -293,7 +293,7 @@ const gameOn = () => {
 };
 
 const reset = () => {
-  isJumping = true;
+  movement.setJumping(true);
   clearInterval(moveTimer); //
   clearInterval(upTimer);
   clearInterval(downTimer);
@@ -305,12 +305,14 @@ const gameOver = () => {
   reset();
   $(".playArea").css({
     background:
-      "url(https://cdn.statically.io/img/i.pinimg.com/originals/6c/10/41/6c104134a19348812711bc77d068e315.jpg)",
+      "url(assets/lose-screen.jpg)",
     "background-size": "cover",
     "text-align": "center",
   });
-  $button = $(`<input type = button value="Restart" id = "restartGame">`);
-  $scoreboard = $('<div>').addClass("scoreboard").text(`You failed to HODL, you only got ${score}`)
+  $button = $(`<input type = button value="BUY THE DIP" id = "restartGame">`);
+  $scoreboard = $("<div>")
+    .addClass("scoreboard")
+    .text(`You failed to HODL, you only got ${score * 1234} BTC`);
   $(".playArea").append($scoreboard).append($button);
   $("#restartGame").on("click", gameOn);
 };

@@ -16,13 +16,15 @@
     position: relative;
     margin: 0 auto;
     top: 70%;
-    font-size: 50px;
+    font-size: 20px;
     cursor: pointer;
 }
 
 .scoreboard {
+    width: 300px;
     color: white;
     position: relative;
     top: 200px;
     background-color: black;
+    margin: 0 auto;
 }
