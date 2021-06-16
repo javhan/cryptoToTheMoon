@@ -274,13 +274,11 @@ const movePlatforms = () => {
 
 const gameOn = () => {
   $('.scoreboard').remove();
-  isJumping = false;
+  movement.setJumping(false);
   score = 0;
-  movement.setDescent(3);
-  movement.setAscent(20);
   $(".playArea").css({
     background:
-      "url(https://cdn.statically.io/img/i.pinimg.com/originals/6c/10/41/6c104134a19348812711bc77d068e315.jpg)",
+    "url(https://cdn.statically.io/img/i.pinimg.com/originals/6c/10/41/6c104134a19348812711bc77d068e315.jpg)",
     "background-size": "cover",
   });
   $("#restartGame").remove();
@@ -289,14 +287,15 @@ const gameOn = () => {
   platformCount = 10;
   createPlatforms();
   moveTimer = setInterval(movePlatforms, 10);
-  downTimer = setInterval(down, 30); // sort this out, causing game to spazz
+  downTimer = setInterval(down, 30);
 };
 
 const reset = () => {
-  movement.setJumping(true);
   clearInterval(moveTimer); //
   clearInterval(upTimer);
   clearInterval(downTimer);
+  movement.setDescent(3);
+  movement.setAscent(20);
   platforms = [];
   $(".playArea").empty();
 };
