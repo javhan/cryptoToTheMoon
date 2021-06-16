@@ -10,6 +10,59 @@ let upTimer; // very important when it comes to resetting jumps
 let moveTimer;
 let jumpSound;
 
+// const siTimer = {
+//   down: 30,
+//   up: 30,
+//   move: 10,
+//   getDown() {
+//     return this.down;
+//   },
+//   getUp() {
+//     return this.up;
+//   },
+//   getMove() {
+//     return this.move;
+//   }
+// }
+
+const movement = {
+  isJumping: false,
+  descent: 3,
+  ascent: 20,
+  startingPoints: 0,
+  keydown: "",
+  getJumping() {
+    return this.isJumping;
+  },
+  setJumping(boolean) {
+    this.isJumping = boolean;
+  },
+  getDescent() {
+    return this.descent;
+  },
+  setDescent(num) {
+    this.descent = num;
+  },
+  getAscent() {
+    return this.ascent;
+  },
+  setAscent(num) {
+    this.ascent = num;
+  },
+  getSP() {
+    return this.startingPoints;
+  },
+  setSP(num) {
+    this.startingPoints = num;
+  },
+  getKeydown() {
+    return this.keydown;
+  },
+  setKeydown(num) {
+    this.keydown = num;
+  },
+};
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////// MISCELLANEOUS \\\\\\\\\\
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -48,10 +101,13 @@ const startMenu = () => {
       "url(https://cdn.statically.io/img/i.pinimg.com/originals/6c/10/41/6c104134a19348812711bc77d068e315.jpg)",
     "background-size": "cover",
   });
+  $title = $("<div>")
+    .attr("id", "title")
+    .text("DO YOU HAVE DIAMOND HANDS? CLICK HODL TO START");
+  $gif = $("<div>").attr("id", "gif");
+  $startText = $("<div>").attr("id", "startGame").text("HODL");
 
-  $startText = $("<div>").attr("id", "startGame").text("HODL!!!");
-
-  $playArea.append($startText);
+  $playArea.append($title).append($gif).append($startText);
 };
 
 const render = () => {
@@ -79,85 +135,51 @@ const render = () => {
 ////////// ROCKET MOVEMENTS \\\\\\\\\\
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const movement = {
-  isJumping: false,
-  descent: 3,
-  ascent: 20,
-  startingPoints: 0,
-  keydown: "",
-  getJumping: () => {
-    return this.isJumping;
-  },
-  setJumping: (boolean) => {
-    this.isJumping = boolean;
-  },
-  getDescent: () => {
-    return this.descent;
-  },
-  setDescent: (num) => {
-    this.descent = num;
-  },
-  getAscent: () => {
-    return this.ascent;
-  },
-  setAscent: (num) => {
-    this.ascent = num;
-  },
-  getSP: () => {
-    return this.startingPoints;
-  },
-  setSP: (num) => {
-    this.startingPoints = num;
-  },
-  getKeydown: () => {
-    return this.keydown;
-  },
-  setKeydown: (num) => {
-    this.keydown = num;
-  },
-};
-
 const down = () => {
-  if (!isJumping) {
-    clearInterval(upTimer);
-    let $rocketBottom = parseFloat($(".rocket").css("bottom"));
-    let $rocketLeft = parseFloat($(".rocket").css("left"));
-    let rocketNewLow = $rocketBottom - movement.getDescent();
-    $(".rocket").css("bottom", `${rocketNewLow}px`);
-    for (const platform of platforms) {
-      if (
-        $rocketLeft >= parseFloat(platform.css("left")) - 25 &&
-        $rocketLeft <= parseFloat(platform.css("left")) + 85 &&
-        $rocketBottom >= parseFloat(platform.css("bottom")) - 10 &&
-        $rocketBottom <= parseFloat(platform.css("bottom")) + 25
-      ) {
-        movement.setJumping(true);
-        movement.setSP(parseFloat($(".rocket").css("bottom")));
-        movement.setDescent(3);
-        jumpSound.play();
-        upTimer = setInterval(up, 50, movement.getSP()); // need to sort this out causing the game to spazz
-      }
-    }
-    if ($rocketBottom <= 0) {
-      clearInterval(downTimer);
-      gameOver();
-    }
-    movement.setDescent(movement.getDescent() + 0.5);
+  console.log(movement.getDescent());
+  if (movement.getJumping()) {
+    // guard
+    return;
   }
+  clearInterval(upTimer);
+  let $rocketBottom = parseFloat($(".rocket").css("bottom"));
+  let $rocketLeft = parseFloat($(".rocket").css("left"));
+  let rocketNewLow = $rocketBottom - movement.getDescent();
+  $(".rocket").css("bottom", `${rocketNewLow}px`);
+  for (const platform of platforms) {
+    const contact =
+      $rocketLeft >= parseFloat(platform.css("left")) - 25 &&
+      $rocketLeft <= parseFloat(platform.css("left")) + 85 &&
+      $rocketBottom >= parseFloat(platform.css("bottom")) - 10 &&
+      $rocketBottom <= parseFloat(platform.css("bottom")) + 25;
+    if (contact) {
+      movement.setJumping(true);
+      movement.setSP(parseFloat($(".rocket").css("bottom")));
+      movement.setDescent(3);
+      jumpSound.play();
+      upTimer = setInterval(up, 30, movement.getSP()); // need to sort this out causing the game to spazz
+    }
+  }
+  if ($rocketBottom <= 0) {
+    movement.setJumping(true);
+    gameOver();
+  }
+  movement.setDescent(movement.getDescent() + 0.25);
 };
 
 const up = (liftPoint) => {
+  console.log(movement.getAscent());
   let $rocketBottom = parseFloat($(".rocket").css("bottom"));
-  if (isJumping) {
+  if (movement.getJumping() === true) {
     clearInterval(downTimer);
     let rocketHigh = $rocketBottom + movement.getAscent();
     $(".rocket").css("bottom", `${rocketHigh}px`);
   }
   if ($rocketBottom >= liftPoint + 120) {
-    isJumping = false;
+    movement.setJumping(false);
     downTimer = setInterval(down, 30);
   } else if ($rocketBottom >= 540) {
-    isJumping = false;
+    movement.setJumping(false);
     downTimer = setInterval(down, 30);
   }
 };
@@ -186,9 +208,9 @@ const moveRocket = () => {
 ////////// PLATFORMS \\\\\\\\\\
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const createPlatforms = () => {
-  for (let i = 0; i < platformCount; i++) {
-    let platformSpace = 600 / platformCount;
+const createPlatforms = (pcount) => {
+  for (let i = 0; i < pcount; i++) {
+    let platformSpace = 600 / pcount;
     let newPlatBottom = 100 + i * platformSpace;
     const $platform = $("<div>")
       .addClass("platform")
@@ -223,24 +245,17 @@ const newPlatform = (newPlatBottom) => {
       "background-size": "contain",
     });
   score++;
-  if (score === 50) {
-    $(".platform").remove();
-    clearInterval(moveTimer);
-    platforms = [];
-    platformCount = 8;
-    createPlatforms();
-    moveTimer = setInterval(movePlatforms, 10);
-    //
+  if (score % 50 === 0 && score <= 100) {
+    // $(".platform").remove();
+    // clearInterval(moveTimer);
+    // platforms = [];
+    // platformCount -= 2;
+    // createPlatforms(platformCount);
+    $(".playArea").find(".platform").last().remove();
+    platforms.pop();
+    // moveTimer = setInterval(movePlatforms, 10);
   }
-  if (score === 100) {
-    $(".platform").remove();
-    clearInterval(moveTimer);
-    platforms = [];
-    platformCount = 6;
-    createPlatforms();
-    moveTimer = setInterval(movePlatforms, 10);
-  }
-  $(".score").text(`Highscore: ${score}`);
+  $(".score").text(`Highscore: ${score * 1234} BTC`);
   platforms.push($platform);
   $(".playArea").append($platform);
 };
@@ -251,15 +266,6 @@ const movePlatforms = () => {
       let newBottom = parseFloat(platform.css("bottom")) - 3;
       platform.css("bottom", `${newBottom}` + `px`);
       if (parseFloat(platform.css("bottom")) < 3) {
-        // platform disappears here
-        if (score === 50) {
-          $(".playArea").find(".platform").last().remove();
-          platforms.pop();
-        }
-        if (score === 100) {
-          $(".playArea").find(".platform").last().remove();
-          platforms.pop();
-        }
         $(".playArea").find(".platform").first().remove();
         platforms.shift();
         newPlatform(590);
@@ -272,11 +278,11 @@ const movePlatforms = () => {
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const gameOn = () => {
-  $('.scoreboard').remove();
-  isJumping = false;
+  $(".scoreboard").remove();
+  $("#title").remove();
+  $("#gif").remove();
+  movement.setJumping(false);
   score = 0;
-  movement.setDescent(3);
-  movement.setAscent(20);
   $(".playArea").css({
     background:
       "url(https://cdn.statically.io/img/i.pinimg.com/originals/6c/10/41/6c104134a19348812711bc77d068e315.jpg)",
@@ -286,32 +292,32 @@ const gameOn = () => {
   $("#startGame").remove();
   render();
   platformCount = 10;
-  createPlatforms();
+  createPlatforms(platformCount);
   moveTimer = setInterval(movePlatforms, 10);
-  downTimer = setInterval(down, 30); // sort this out, causing game to spazz
+  downTimer = setInterval(down, 30);
 };
 
 const reset = () => {
-  isJumping = true;
   clearInterval(moveTimer); //
   clearInterval(upTimer);
   clearInterval(downTimer);
+  movement.setDescent(3);
+  movement.setAscent(20);
   platforms = [];
   $(".playArea").empty();
 };
 
 const gameOver = () => {
-  reset();
+  console.log(reset());
   $(".playArea").css({
-    background:
-      "url(assets/lose-screen.jpg)",
+    background: "url(assets/lose-screen.jpg)",
     "background-size": "cover",
     "text-align": "center",
   });
   $button = $(`<input type = button value="BUY THE DIP" id = "restartGame">`);
   $scoreboard = $("<div>")
     .addClass("scoreboard")
-    .text(`You failed to HODL, you only got ${score}`);
+    .text(`You failed to HODL, you only got ${score * 1234} BTC`);
   $(".playArea").append($scoreboard).append($button);
   $("#restartGame").on("click", gameOn);
 };

@@ -104,7 +104,7 @@ const startMenu = () => {
   $title = $("<div>")
     .attr("id", "title")
     .text("DO YOU HAVE DIAMOND HANDS? CLICK HODL TO START");
-  $gif = $("<div>").attr("id", "gif")  
+  $gif = $("<div>").attr("id", "gif");
   $startText = $("<div>").attr("id", "startGame").text("HODL");
 
   $playArea.append($title).append($gif).append($startText);
@@ -137,8 +137,7 @@ const render = () => {
 
 const down = () => {
   console.log(movement.getDescent());
-  if (movement.getJumping()) {
-    // guard
+  if (movement.getJumping()) { //guard
     return;
   }
   clearInterval(upTimer);
@@ -208,9 +207,9 @@ const moveRocket = () => {
 ////////// PLATFORMS \\\\\\\\\\
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const createPlatforms = () => {
-  for (let i = 0; i < platformCount; i++) {
-    let platformSpace = 600 / platformCount;
+const createPlatforms = (pcount) => {
+  for (let i = 0; i < pcount; i++) {
+    let platformSpace = 600 / pcount;
     let newPlatBottom = 100 + i * platformSpace;
     const $platform = $("<div>")
       .addClass("platform")
@@ -246,12 +245,16 @@ const newPlatform = (newPlatBottom) => {
     });
   score++;
   if (score % 50 === 0 && score <= 100) {
-    $(".platform").remove();
-    clearInterval(moveTimer);
-    platforms = [];
-    platformCount -= 2;
-    createPlatforms();
-    moveTimer = setInterval(movePlatforms, 10);
+    // $(".platform").remove();
+    // clearInterval(moveTimer);
+    // platforms = [];
+    // platformCount -= 2;
+    // createPlatforms(platformCount);
+    $(".playArea").find(".platform").first().remove();
+    platforms.shift();
+    $(".playArea").find(".platform").last().remove();
+    platforms.pop();
+    // moveTimer = setInterval(movePlatforms, 10);
   }
   $(".score").text(`Highscore: ${score * 1234} BTC`);
   platforms.push($platform);
@@ -264,15 +267,6 @@ const movePlatforms = () => {
       let newBottom = parseFloat(platform.css("bottom")) - 3;
       platform.css("bottom", `${newBottom}` + `px`);
       if (parseFloat(platform.css("bottom")) < 3) {
-        // platform disappears here
-        if (score === 50) {
-          $(".playArea").find(".platform").last().remove();
-          platforms.pop();
-        }
-        if (score === 100) {
-          $(".playArea").find(".platform").last().remove();
-          platforms.pop();
-        }
         $(".playArea").find(".platform").first().remove();
         platforms.shift();
         newPlatform(590);
@@ -299,7 +293,7 @@ const gameOn = () => {
   $("#startGame").remove();
   render();
   platformCount = 10;
-  createPlatforms();
+  createPlatforms(platformCount);
   moveTimer = setInterval(movePlatforms, 10);
   downTimer = setInterval(down, 30);
 };
