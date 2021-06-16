@@ -1,12 +1,46 @@
-#startGame  {
+body {
+    margin: auto;
+    max-width: 400px;
+    padding: 10px;
+    background: grey;
+}
+
+#title {
     color: white;
+    width: 300px;
+    height: auto;
+    position: relative;
+    margin: 0 auto;
+    top: 10%;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+#gif {
+    background-image: url("assets/tenor.gif");
+    background-size: contain;
+    background-repeat: noreapt;
+    width: 265px;
+    height: 200px;
+    position: relative;
+    margin: 0 auto;
+    top: 110px;
+}
+
+#startGame  {
+    color: black;
+    background-color: white;
     width: 200px;
     height: auto;
     position: relative;
     margin: 0 auto;
-    top: 50%;
+    top: 30%;
     font-size: 50px;
+    border-radius: 5px;
     cursor: pointer;
+    border-width: thick;
+    border-color: black;
+    text-align: center;
 }
 
 #restartGame    {
@@ -27,4 +61,8 @@
     top: 200px;
     background-color: black;
     margin: 0 auto;
+}
+
+h1, p{
+    text-align:center;
 }

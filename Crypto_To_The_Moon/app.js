@@ -10,6 +10,21 @@ let upTimer; // very important when it comes to resetting jumps
 let moveTimer;
 let jumpSound;
 
+// const siTimer = {
+//   down: 30,
+//   up: 30,
+//   move: 10,
+//   getDown() {
+//     return this.down;
+//   },
+//   getUp() {
+//     return this.up;
+//   },
+//   getMove() {
+//     return this.move;
+//   }
+// }
+
 const movement = {
   isJumping: false,
   descent: 3,
@@ -86,10 +101,13 @@ const startMenu = () => {
       "url(https://cdn.statically.io/img/i.pinimg.com/originals/6c/10/41/6c104134a19348812711bc77d068e315.jpg)",
     "background-size": "cover",
   });
+  $title = $("<div>")
+    .attr("id", "title")
+    .text("DO YOU HAVE DIAMOND HANDS? CLICK HODL TO START");
+  $gif = $("<div>").attr("id", "gif")  
+  $startText = $("<div>").attr("id", "startGame").text("HODL");
 
-  $startText = $("<div>").attr("id", "startGame").text("HODL!!!");
-
-  $playArea.append($startText);
+  $playArea.append($title).append($gif).append($startText);
 };
 
 const render = () => {
@@ -117,37 +135,40 @@ const render = () => {
 ////////// ROCKET MOVEMENTS \\\\\\\\\\
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 const down = () => {
-  if (movement.getJumping() === false) {
-    clearInterval(upTimer);
-    let $rocketBottom = parseFloat($(".rocket").css("bottom"));
-    let $rocketLeft = parseFloat($(".rocket").css("left"));
-    let rocketNewLow = $rocketBottom - movement.getDescent();
-    $(".rocket").css("bottom", `${rocketNewLow}px`);
-    for (const platform of platforms) {
-      if (
-        $rocketLeft >= parseFloat(platform.css("left")) - 25 &&
-        $rocketLeft <= parseFloat(platform.css("left")) + 85 &&
-        $rocketBottom >= parseFloat(platform.css("bottom")) - 10 &&
-        $rocketBottom <= parseFloat(platform.css("bottom")) + 25
-      ) {
-        movement.setJumping(true);
-        movement.setSP(parseFloat($(".rocket").css("bottom")));
-        movement.setDescent(3);
-        jumpSound.play();
-        upTimer = setInterval(up, 50, movement.getSP()); // need to sort this out causing the game to spazz
-      }
-    }
-    if ($rocketBottom <= 0) {
-      clearInterval(downTimer);
-      gameOver();
-    }
-    movement.setDescent(movement.getDescent() + 0.5);
+  console.log(movement.getDescent());
+  if (movement.getJumping()) {
+    // guard
+    return;
   }
+  clearInterval(upTimer);
+  let $rocketBottom = parseFloat($(".rocket").css("bottom"));
+  let $rocketLeft = parseFloat($(".rocket").css("left"));
+  let rocketNewLow = $rocketBottom - movement.getDescent();
+  $(".rocket").css("bottom", `${rocketNewLow}px`);
+  for (const platform of platforms) {
+    const contact =
+      $rocketLeft >= parseFloat(platform.css("left")) - 25 &&
+      $rocketLeft <= parseFloat(platform.css("left")) + 85 &&
+      $rocketBottom >= parseFloat(platform.css("bottom")) - 10 &&
+      $rocketBottom <= parseFloat(platform.css("bottom")) + 25;
+    if (contact) {
+      movement.setJumping(true);
+      movement.setSP(parseFloat($(".rocket").css("bottom")));
+      movement.setDescent(3);
+      jumpSound.play();
+      upTimer = setInterval(up, 30, movement.getSP()); // need to sort this out causing the game to spazz
+    }
+  }
+  if ($rocketBottom <= 0) {
+    movement.setJumping(true);
+    gameOver();
+  }
+  movement.setDescent(movement.getDescent() + 0.25);
 };
 
 const up = (liftPoint) => {
+  console.log(movement.getAscent());
   let $rocketBottom = parseFloat($(".rocket").css("bottom"));
   if (movement.getJumping() === true) {
     clearInterval(downTimer);
@@ -224,20 +245,11 @@ const newPlatform = (newPlatBottom) => {
       "background-size": "contain",
     });
   score++;
-  if (score === 50) {
+  if (score % 50 === 0 && score <= 100) {
     $(".platform").remove();
     clearInterval(moveTimer);
     platforms = [];
-    platformCount = 8;
-    createPlatforms();
-    moveTimer = setInterval(movePlatforms, 10);
-    //
-  }
-  if (score === 100) {
-    $(".platform").remove();
-    clearInterval(moveTimer);
-    platforms = [];
-    platformCount = 6;
+    platformCount -= 2;
     createPlatforms();
     moveTimer = setInterval(movePlatforms, 10);
   }
@@ -273,12 +285,14 @@ const movePlatforms = () => {
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const gameOn = () => {
-  $('.scoreboard').remove();
+  $(".scoreboard").remove();
+  $("#title").remove();
+  $("#gif").remove();
   movement.setJumping(false);
   score = 0;
   $(".playArea").css({
     background:
-    "url(https://cdn.statically.io/img/i.pinimg.com/originals/6c/10/41/6c104134a19348812711bc77d068e315.jpg)",
+      "url(https://cdn.statically.io/img/i.pinimg.com/originals/6c/10/41/6c104134a19348812711bc77d068e315.jpg)",
     "background-size": "cover",
   });
   $("#restartGame").remove();
@@ -301,10 +315,9 @@ const reset = () => {
 };
 
 const gameOver = () => {
-  reset();
+  console.log(reset());
   $(".playArea").css({
-    background:
-      "url(assets/lose-screen.jpg)",
+    background: "url(assets/lose-screen.jpg)",
     "background-size": "cover",
     "text-align": "center",
   });
