@@ -10,6 +10,7 @@ let upTimer; // very important when it comes to resetting jumps
 let moveTimer;
 let jumpSound;
 let traverse;
+let platTimer = 11;
 
 const movement = {
   isJumping: false,
@@ -123,7 +124,8 @@ const render = () => {
 
 const down = () => {
   console.log(movement.getDescent());
-  if (movement.getJumping()) { //guard
+  if (movement.getJumping()) {
+    //guard
     return;
   }
   clearInterval(upTimer);
@@ -232,15 +234,15 @@ const newPlatform = (newPlatBottom) => {
   score++;
   if (score % 20 === 0 && score <= 40) {
     $(".playArea").find(".platform:nth-child(2)").remove();
-    platforms.splice(1,1);
+    platforms.splice(1, 1);
     $(".playArea").find(".platform").last().remove();
     platforms.pop();
     $(".playArea").find(".platform").first().remove();
   }
-  if (score === 60) {
+  if (score % 50 === 0) {
     clearInterval(moveTimer);
-    traverse = 20;
-    moveTimer = setInterval(movePlatforms, 2);
+    traverse += 2;
+    moveTimer = setInterval(movePlatforms, 4);
   }
   $(".score").text(`Highscore: ${Math.pow(score, 2)} BTC`);
   platforms.push($platform);
@@ -305,7 +307,7 @@ const gameOver = () => {
   $button = $(`<input type = button value="BUY THE DIP" id = "restartGame">`);
   $scoreboard = $("<div>")
     .addClass("scoreboard")
-    .text(`You failed to HODL, you only got ${Math.pow(score,2)} BTC`);
+    .text(`You failed to HODL, you only got ${Math.pow(score, 2)} BTC`);
   $(".playArea").append($scoreboard).append($button);
   $("#restartGame").on("click", gameOn);
 };

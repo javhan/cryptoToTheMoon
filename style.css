@@ -60,8 +60,13 @@ body {
     top: 200px;
     background-color: black;
     margin: 0 auto;
+    text-align: center;
 }
 
 h1, p{
-    text-align:center;
+    text-align: center;
+}
+
+.score {
+    text-align: center;
 }
