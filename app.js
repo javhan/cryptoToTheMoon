@@ -9,21 +9,7 @@ let downTimer; // very important when it comes to resetting jumps
 let upTimer; // very important when it comes to resetting jumps
 let moveTimer;
 let jumpSound;
-
-// const siTimer = {
-//   down: 30,
-//   up: 30,
-//   move: 10,
-//   getDown() {
-//     return this.down;
-//   },
-//   getUp() {
-//     return this.up;
-//   },
-//   getMove() {
-//     return this.move;
-//   }
-// }
+let traverse;
 
 const movement = {
   isJumping: false,
@@ -192,11 +178,11 @@ const moveRocket = () => {
   }
   switch (movement.getKeydown()) {
     case "ArrowLeft":
-      let moveLeft = $rocketLeft - 10;
+      let moveLeft = $rocketLeft - traverse;
       $(".rocket").css("left", `${moveLeft}px`);
       break;
     case "ArrowRight":
-      let moveRight = $rocketLeft + 10;
+      let moveRight = $rocketLeft + traverse;
       $(".rocket").css("left", `${moveRight}px`);
       break;
   }
@@ -244,19 +230,19 @@ const newPlatform = (newPlatBottom) => {
       "background-size": "contain",
     });
   score++;
-  if (score % 50 === 0 && score <= 100) {
-    // $(".platform").remove();
-    // clearInterval(moveTimer);
-    // platforms = [];
-    // platformCount -= 2;
-    // createPlatforms(platformCount);
-    $(".playArea").find(".platform").first().remove();
-    platforms.shift();
+  if (score % 20 === 0 && score <= 40) {
+    $(".playArea").find(".platform:nth-child(2)").remove();
+    platforms.splice(1,1);
     $(".playArea").find(".platform").last().remove();
     platforms.pop();
-    // moveTimer = setInterval(movePlatforms, 10);
+    $(".playArea").find(".platform").first().remove();
   }
-  $(".score").text(`Highscore: ${score * 1234} BTC`);
+  if (score === 60) {
+    clearInterval(moveTimer);
+    traverse = 20;
+    moveTimer = setInterval(movePlatforms, 2);
+  }
+  $(".score").text(`Highscore: ${score} BTC`);
   platforms.push($platform);
   $(".playArea").append($platform);
 };
@@ -283,6 +269,7 @@ const gameOn = () => {
   $("#title").remove();
   $("#gif").remove();
   movement.setJumping(false);
+  traverse = 10;
   score = 0;
   $(".playArea").css({
     background:
@@ -309,7 +296,7 @@ const reset = () => {
 };
 
 const gameOver = () => {
-  console.log(reset());
+  reset();
   $(".playArea").css({
     background: "url(assets/lose-screen.jpg)",
     "background-size": "cover",
