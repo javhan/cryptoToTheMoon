@@ -242,7 +242,7 @@ const newPlatform = (newPlatBottom) => {
     traverse = 20;
     moveTimer = setInterval(movePlatforms, 2);
   }
-  $(".score").text(`Highscore: ${score} BTC`);
+  $(".score").text(`Highscore: ${Math.exp(score)} BTC`);
   platforms.push($platform);
   $(".playArea").append($platform);
 };
@@ -305,7 +305,7 @@ const gameOver = () => {
   $button = $(`<input type = button value="BUY THE DIP" id = "restartGame">`);
   $scoreboard = $("<div>")
     .addClass("scoreboard")
-    .text(`You failed to HODL, you only got ${score * 1234} BTC`);
+    .text(`You failed to HODL, you only got ${Math.exp(score)} BTC`);
   $(".playArea").append($scoreboard).append($button);
   $("#restartGame").on("click", gameOn);
 };
